@@ -1,6 +1,9 @@
-import api from "./api/api"
-import { useEffect,useRef,useState } from "react"
+import api from "./api/api";
+import Editar from "./components/edit";
+import { useEffect,useRef,useState } from "react";
 import { FaTrash } from "react-icons/fa";
+import { CiEdit } from "react-icons/ci";
+
 
 
 function App(){
@@ -10,6 +13,8 @@ function App(){
   const refRomaji=useRef(null)
   const refHiragana=useRef(null)
   const [selectVerbo,setSelectVerbo]=useState('vazio')
+  const [open,setOpen]=useState(false)
+  const [editando,setEditando]=useState()
 
   async function salvar(){
     if(refPortugues.current.value==''|| refRomaji.current.value=='' || refHiragana.current.value=='' || selectVerbo =='vazio'){
@@ -35,17 +40,23 @@ function App(){
     try{
       await api.delete(`/deletar/${id}`)
       const allDeletar=getVerbos.filter(filter=>filter._id!=id)
+     
       setGetVerbos(allDeletar)
     }catch(error){
       console.log('erro no deletar')
     }
   }
 
+  const updateItem = (id, portugues,romaji,hiragana) => {
+    setGetVerbos(getVerbos.map(item => item.id === id ? {...item,portugues:portugues,romaji:romaji,hiragana:hiragana}: item));
+  
+  };
+
   useEffect(()=>{
     const get=async()=>{
       try{
         const response=await api.get('/')
-        console.log(response.data)
+        
         setGetVerbos(response.data)
          
       }catch(error){
@@ -53,12 +64,25 @@ function App(){
       }
     }
     get()
-  },[])
+  },[getVerbos])
 
+  const editar=async(id,portugues,romaji,hiragana)=>{
+    setOpen(!open)
+    let verbos={
+      id:id,
+      portugues:portugues,
+      romaji:romaji,
+      hiragana:hiragana
+    }
+    setEditando(verbos)
+   
+    
+  }
+ 
+  
   const lowBusca=buscar.toLowerCase()
   const buscarVerbos=getVerbos.filter(filtrar=>filtrar.portugues.toLowerCase().startsWith(lowBusca))
 
-  
   
 
 
@@ -112,13 +136,16 @@ function App(){
             <p className="p-1 w-full flex-1 text-xs text-center  md:text-sm">{get.romaji}</p>
             <p className="p-1 w-full flex-1 text-xs text-center  md:text-sm">{get.hiragana}</p>
             <p className="p-1 w-full flex-1 text-xs text-center  md:text-sm">{get.grupo}</p>
-            <div className="p-1  flex justify-center  text-xs text-center">
+            <div className="p-1  flex justify-center items-center  text-xs text-center gap-2">
               <FaTrash size={15} onClick={()=>deletar(get._id)}/>
+              <CiEdit size={20} onClick={()=>editar(get._id,get.portugues,get.romaji,get.hiragana)}/>
             </div>
           </div>
-        ))}
+          ))}
       </div>
-
+        {open && (
+          <Editar fechar={()=>setOpen(!open)} editando={editando} verbos={updateItem} />
+        )}
     </div>
   )
 }
