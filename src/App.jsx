@@ -48,7 +48,7 @@ function App(){
   }
 
   const updateItem = (id, portugues,romaji,hiragana) => {
-    setGetVerbos(getVerbos.map(item => item.id === id ? {...item,portugues:portugues,romaji:romaji,hiragana:hiragana}: item));
+    setGetVerbos(getVerbos.map(item => item._id === id ? {...item,portugues:portugues,romaji:romaji,hiragana:hiragana}: item));
   
   };
 
